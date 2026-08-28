@@ -1,10 +1,11 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# 1. On copie tout ce que Render télécharge depuis GitHub
+# 1. On copie tout ce que Render nous donne
 COPY . /app
 
-# 2. LE PIÈGE : On demande à Linux de chercher le fichier pom.xml. 
-# Si la commande ne trouve rien, elle va écrire "FICHIER INTROUVABLE".
-# Si elle trouve quelque chose, elle va afficher le chemin exact (ex: /app/pom.xml) directement dans l'erreur rouge.
-RUN find /app -name pom.xml | grep "pom.xml"
+# 2. On affiche le contenu du dossier /app
+RUN echo "=== DEBUT DU CONTENU ===" && ls -la /app && echo "=== FIN DU CONTENU ==="
+
+# 3. On force le plantage pour figer l'écran et lire le résultat du ls
+RUN exit 1
