@@ -1,12 +1,17 @@
 # ---- Étape 1 : Compilation ----
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /workspace
+
+# On copie tout le contenu (le point .) dans le dossier /workspace
 COPY . /workspace
+
+# On lance la compilation là où se trouve le pom.xml
 RUN mvn clean package -DskipTests
 
 # ---- Étape 2 : Exécution ----
 FROM eclipse-temurin:21-jre
 WORKDIR /deployments/
+
 COPY --from=build /workspace/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=build /workspace/target/quarkus-app/*.jar /deployments/
 COPY --from=build /workspace/target/quarkus-app/app/ /deployments/app/
