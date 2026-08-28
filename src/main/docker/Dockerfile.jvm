@@ -1,16 +1,25 @@
 # ---- Étape 1 : Compilation ----
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+
+# 1. On copie tout l'arbre de fichiers de GitHub dans /app
 COPY . /app
-RUN mvn clean package -DskipTests -e
+
+# 2. On se déplace dans le sous-dossier où se cache réellement votre pom.xml
+WORKDIR /app/wrapper
+
+# 3. On lance la compilation Maven depuis ce dossier
+RUN mvn clean package -DskipTests
 
 # ---- Étape 2 : Exécution ----
 FROM eclipse-temurin:21-jre
 WORKDIR /deployments/
-COPY --from=build /app/target/quarkus-app/lib/ /deployments/lib/
-COPY --from=build /app/target/quarkus-app/*.jar /deployments/
-COPY --from=build /app/target/quarkus-app/app/ /deployments/app/
-COPY --from=build /app/target/quarkus-app/quarkus/ /deployments/quarkus/
+
+# On récupère les fichiers générés dans le dossier target du sous-dossier wrapper
+COPY --from=build /app/wrapper/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=build /app/wrapper/target/quarkus-app/*.jar /deployments/
+COPY --from=build /app/wrapper/target/quarkus-app/app/ /deployments/app/
+COPY --from=build /app/wrapper/target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
