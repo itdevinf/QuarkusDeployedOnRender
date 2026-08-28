@@ -1,0 +1,11 @@
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /workspace
+
+# 1. On copie tout le contenu reçu de GitHub
+COPY . /workspace
+
+# 2. COMMANDE ESPION : On demande à Linux d'afficher TOUS les fichiers présents
+RUN echo "=== CONTENU DU DOSSIER DE COMPILATION ===" && ls -la && echo "=========================================="
+
+# 3. On laisse la commande pour que le build tente de se lancer
+RUN mvn clean package -DskipTests
