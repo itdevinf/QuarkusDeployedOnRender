@@ -1,12 +1,18 @@
 # ---- Étape 1 : Compilation ----
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /workspace
+
+# On copie tout le contenu reçu de GitHub dans le dossier /workspace
 COPY . /workspace
-RUN mvn clean package -DskipTests
+
+# Force Maven à lire le pom.xml en lui donnant le chemin exact avec l'option -f
+RUN mvn -f /workspace/pom.xml clean package -DskipTests
 
 # ---- Étape 2 : Exécution ----
 FROM eclipse-temurin:17-jre
 WORKDIR /deployments/
+
+# On récupère les fichiers générés dans le dossier de build
 COPY --from=build /workspace/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=build /workspace/target/quarkus-app/*.jar /deployments/
 COPY --from=build /workspace/target/quarkus-app/app/ /deployments/app/
