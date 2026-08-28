@@ -1,12 +1,17 @@
-# ---- Étape 1 : Compilation (Avec Java 21) ----
+# ---- Étape 1 : Compilation ----
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /workspace
-COPY . /workspace
-RUN mvn clean package -DskipTests
 
-# ---- Étape 2 : Exécution (Avec Java 21) ----
+# On copie l'intégralité du code GitHub dans /workspace
+COPY . /workspace
+
+# On force Maven à lire le pom.xml en lui donnant son chemin absolu
+RUN mvn -f /workspace/pom.xml clean package -DskipTests
+
+# ---- Étape 2 : Exécution ----
 FROM eclipse-temurin:21-jre
 WORKDIR /deployments/
+
 COPY --from=build /workspace/target/quarkus-app/lib/ /deployments/lib/
 COPY --from=build /workspace/target/quarkus-app/*.jar /deployments/
 COPY --from=build /workspace/target/quarkus-app/app/ /deployments/app/
