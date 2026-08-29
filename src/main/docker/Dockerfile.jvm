@@ -1,11 +1,17 @@
+# ---- Étape 1 : Compilation ----
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-
-# 1. On copie tout ce que Render nous donne
 COPY . /app
+RUN mvn clean package -DskipTests
 
-# 2. On affiche le contenu du dossier /app
-RUN echo "=== DEBUT DU CONTENU ===" && ls -la /app && echo "=== FIN DU CONTENU ==="
+# ---- Étape 2 : Exécution ----
+FROM eclipse-temurin:21-jre
+WORKDIR /deployments/
+COPY --from=build /app/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=build /app/target/quarkus-app/*.jar /deployments/
+COPY --from=build /app/target/quarkus-app/app/ /deployments/app/
+COPY --from=build /app/target/quarkus-app/quarkus/ /deployments/quarkus/
 
-# 3. On force le plantage pour figer l'écran et lire le résultat du ls
-RUN exit 1
+EXPOSE 8080
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+CMD ["java", "-jar", "/deployments/quarkus-run.jar"]
